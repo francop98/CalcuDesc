@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Descuentos</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="gastar.css">
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="label-tag">Calculadora de descuentos</div>
+    <h1>Calculá cuanto<br><em>podes gastar</em></h1>
+  </div>
+
+  <div class="card-body">
+    <div class="field">
+      <label for="descuento">Descuento</label>
+      <div class="input-wrap">
+        <span class="prefix">%</span>
+        <input type="number" id="descuento" placeholder="porcentaje de descuento" min="1" max="99" step="any" inputmode="decimal">
+      </div>
+
+    </div>
+
+    <div class="field">
+      <label for="tope">Tope de reintegro</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="tope" placeholder="Máximo que te devuelven" min="1" step="any" inputmode="decimal">
+      </div>
+      
+    </div>
+
+    <div class="error-msg" id="error">Completá ambos campos para calcular.</div>
+
+    <button onclick="calcular()">Calcular →</button>
+
+    <div class="divider"></div>
+
+    <div class="result" id="result">
+      <div class="result-label">Resultado</div>
+
+      <div class="result-main">
+        <div class="result-question">Máximo que podés gastar aprovechando el descuento</div>
+        <div class="result-value" id="res-gasto">$0</div>
+      </div>
+
+      <div class="result-breakdown">
+        <div class="breakdown-item">
+          <div class="breakdown-label">Reintegro efectivo</div>
+          <div class="breakdown-value green" id="res-reintegro">$0</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-label">Lo que terminás pagando</div>
+          <div class="breakdown-value" id="res-final">$0</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-label">Descuento aplicado</div>
+          <div class="breakdown-value" id="res-pct">0%</div>
+        </div>
+        <div class="breakdown-item">
+          <div class="breakdown-label">Ahorro real</div>
+          <div class="breakdown-value green" id="res-ahorro">$0</div>
+        </div>
+      </div>
+
+      <button class="reset-btn" onclick="resetear()">← Nueva consulta</button>
+    </div>
+  </div>
+</div>
+
+<script src="gastar.js"></script>
+</body>
+</html>

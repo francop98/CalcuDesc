@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CalcuDesc — Efectivo vs Cuotas</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="medioPago.css">
+</head>
+<body>
+
+  <div class="wrapper">
+    <div class="card">
+      <div class="card-header">
+        <a class="back-btn" href="index.html">← Volver</a>
+        <div class="label-tag">Análisis comparativo</div>
+        <h1>¿Efectivo o<br><em>cuotas?</em></h1>
+      </div>
+
+      <div class="card-body">
+
+        <div class="field">
+          <label for="precio-efectivo">Precio en efectivo</label>
+          <div class="input-wrap">
+            <span class="prefix">$</span>
+            <input type="number" id="precio-efectivo" placeholder="100000" min="1" step="any" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="precio-cuota">Valor de cada cuota</label>
+          <div class="input-wrap">
+            <span class="prefix">$</span>
+            <input type="number" id="precio-cuota" placeholder="45000" min="1" step="any" inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cant-cuotas">Cantidad de cuotas</label>
+          <div class="input-wrap">
+            <span class="prefix">#</span>
+            <input type="number" id="cant-cuotas" placeholder="3" min="1" max="120" step="1" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="inflacion">Inflación mensual estimada <span class="hint-inline">(opcional)</span></label>
+          <div class="input-wrap">
+            <span class="prefix">%</span>
+            <input type="number" id="inflacion" placeholder="3.5" min="0" step="any" inputmode="decimal">
+          </div>
+          <span class="hint">Si la dejás vacía, solo se compara el precio nominal</span>
+        </div>
+
+        <div class="error-msg" id="error-cuotas">Completá precio efectivo, cuota y cantidad de cuotas.</div>
+
+        <button onclick="calcularCuotas()">Analizar →</button>
+
+        <div class="divider"></div>
+
+        <div class="result" id="result-cuotas">
+          <div class="result-label">Análisis</div>
+
+          <div class="veredicto" id="veredicto">
+            <div class="veredicto-icon" id="veredicto-icon">✓</div>
+            <div class="veredicto-texto" id="veredicto-texto"></div>
+          </div>
+
+          <div class="result-breakdown">
+            <div class="breakdown-item">
+              <div class="breakdown-label">Total efectivo</div>
+              <div class="breakdown-value" id="res-ef">$0</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-label">Total en cuotas</div>
+              <div class="breakdown-value" id="res-cuotas-total">$0</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-label">Diferencia nominal</div>
+              <div class="breakdown-value" id="res-diff">$0</div>
+            </div>
+            <div class="breakdown-item">
+              <div class="breakdown-label">Recargo / ahorro</div>
+              <div class="breakdown-value" id="res-recargo">0%</div>
+            </div>
+          </div>
+
+          <div class="inflacion-row" id="inflacion-row">
+            <div class="breakdown-item full">
+              <div class="breakdown-label">Total cuotas a valor de hoy (ajustado por inflación)</div>
+              <div class="breakdown-value green" id="res-real">$0</div>
+            </div>
+          </div>
+
+          <div class="consejo" id="consejo"></div>
+
+          <button class="reset-btn" onclick="resetCuotas()">← Nueva consulta</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="medioPago.js"></script>
+</body>
+</html>

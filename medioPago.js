@@ -1,24 +1,10 @@
-// ── Inflación INDEC ─────────────────────────────────────────────────────────
-// Fuente: API de datos abiertos del INDEC (IPC nivel general, variación mensual)
-// Si falla, el usuario puede ingresar el valor manualmente.
-
-const INFLACION_FALLBACK = null; // null = no precargamos un valor hardcodeado
-
-async function fetchInflacionINDEC() {
-  try {
-    // API pública del INDEC: serie IPC variación porcentual mensual (id 101.1_I2N_2016_M_22)
-    const url =
-      'https://apis.datos.gob.ar/series/api/series/?ids=101.1_I2N_2016_M_22&limit=1&sort=desc&format=json';
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const valor = data?.data?.[0]?.[1];
-    if (valor == null || isNaN(valor)) throw new Error('dato vacío');
-    return parseFloat(valor.toFixed(2));
-  } catch (e) {
-    return null;
-  }
-}
+// ── Inflación ────────────────────────────────────────────────────────────────
+// Dato hardcodeado del último IPC mensual publicado por INDEC.
+// Actualizarlo manualmente una vez por mes cuando sale el informe del INDEC
+// (siempre los primeros días del mes siguiente).
+// ⚠️  ACTUALIZAR ESTOS DOS VALORES CADA MES:
+const IPC_VALOR = 3.4;      // % mensual — fuente: INDEC
+const IPC_MES   = 'Marzo 2026'; // mes al que corresponde
 
 // ── Formato ──────────────────────────────────────────────────────────────────
 function fmt(n) {
@@ -29,33 +15,15 @@ function fmtPct(n) {
 }
 
 // ── Estado de inflación ───────────────────────────────────────────────────────
-let inflacionAuto = null; // valor traído de INDEC
-let inflacionCargada = false;
+let inflacionAuto = IPC_VALOR;
 
-async function iniciarInflacion() {
-  const badge     = document.getElementById('inflacion-badge');
-  const badgeVal  = document.getElementById('inflacion-badge-valor');
-  const inputInfl = document.getElementById('inflacion');
-  const wrapInfl  = document.getElementById('inflacion-wrap');
+function iniciarInflacion() {
+  const badge    = document.getElementById('inflacion-badge');
+  const wrapInfl = document.getElementById('inflacion-wrap');
 
-  badge.textContent = 'Buscando inflación INDEC…';
-  badge.className = 'inflacion-badge loading';
-
-  const valor = await fetchInflacionINDEC();
-
-  if (valor !== null) {
-    inflacionAuto = valor;
-    inflacionCargada = true;
-    badgeVal.textContent = valor + '%';
-    badge.className = 'inflacion-badge ok';
-    // Ocultamos el input manual y mostramos el badge como fuente
-    wrapInfl.classList.add('hidden');
-  } else {
-    inflacionAuto = null;
-    badge.className = 'inflacion-badge error';
-    // Mostramos input manual
-    wrapInfl.classList.remove('hidden');
-  }
+  badge.className = 'inflacion-badge ok';
+  // Ocultar input manual — el dato ya está cargado
+  wrapInfl.classList.add('hidden');
 }
 
 // ── Toggle recargo ────────────────────────────────────────────────────────────
@@ -71,9 +39,11 @@ function toggleRecargo() {
 
 // ── Cálculo principal ─────────────────────────────────────────────────────────
 function calcularCuotas() {
-  const efectivo = parseFloat(document.getElementById('precio-efectivo').value);
-  const cuota    = parseFloat(document.getElementById('precio-cuota').value);
-  const nCuotas  = parseInt(document.getElementById('cant-cuotas').value);
+  const efectivo      = parseFloat(document.getElementById('precio-efectivo').value);
+  const totalCuotas_i = parseFloat(document.getElementById('precio-cuota').value);
+  const nCuotas       = parseInt(document.getElementById('cant-cuotas').value);
+  // Cuota mensual = total en cuotas / cantidad de cuotas
+  const cuota = totalCuotas_i / nCuotas;
   const error    = document.getElementById('error-cuotas');
   const result   = document.getElementById('result-cuotas');
 
@@ -89,7 +59,7 @@ function calcularCuotas() {
     inflMensual = parseFloat(document.getElementById('inflacion').value);
   }
 
-  if (!efectivo || !cuota || !nCuotas || efectivo <= 0 || cuota <= 0 || nCuotas < 1) {
+  if (!efectivo || !totalCuotas_i || !nCuotas || efectivo <= 0 || totalCuotas_i <= 0 || nCuotas < 1) {
     error.classList.add('show');
     result.classList.remove('show');
     return;

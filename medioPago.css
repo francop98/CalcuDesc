@@ -8,6 +8,7 @@
   --line: #c8bfa8;
   --muted: #8c7e68;
   --gold: #c9a84c;
+  --green: #2a7d4f;
 }
 
 body {
@@ -30,7 +31,7 @@ body {
   max-width: 520px;
 }
 
-/* ── Card ── */
+/* Card */
 .card {
   background: var(--paper);
   border: 1.5px solid var(--line);
@@ -75,7 +76,6 @@ body {
   text-decoration: none;
   transition: color 0.15s;
 }
-
 .back-btn:hover { color: var(--accent); }
 
 .label-tag {
@@ -92,13 +92,9 @@ h1 {
   line-height: 1.1;
   color: var(--ink);
 }
+h1 em { color: var(--accent); font-style: italic; }
 
-h1 em {
-  color: var(--accent);
-  font-style: italic;
-}
-
-/* ── Body ── */
+/* Body */
 .card-body {
   padding: 1.8rem 2rem;
   display: flex;
@@ -106,7 +102,7 @@ h1 em {
   gap: 1.4rem;
 }
 
-/* ── Fields ── */
+/* Fields */
 .field {
   display: flex;
   flex-direction: column;
@@ -136,7 +132,6 @@ label {
   overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .input-wrap:focus-within {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(212,80,42,0.1);
@@ -165,7 +160,6 @@ input[type="number"] {
   outline: none;
   -moz-appearance: textfield;
 }
-
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
@@ -173,15 +167,134 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   font-size: 0.62rem;
   color: var(--muted);
   letter-spacing: 0.03em;
+  line-height: 1.5;
+  margin-top: 0.25rem;
 }
 
+/* ── Toggle ¿Con interés? ─────────────────────────────────────────────────── */
+.toggle-group {
+  display: flex;
+  gap: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.toggle-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: var(--bg);
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.toggle-option + .toggle-option {
+  border-left: 1.5px solid var(--line);
+}
+
+.toggle-option input[type="radio"] {
+  display: none;
+}
+
+.toggle-label {
+  width: 100%;
+  text-align: center;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toggle-option input[type="radio"]:checked + .toggle-label {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.toggle-option:hover .toggle-label {
+  background: rgba(200,191,168,0.3);
+  color: var(--ink);
+}
+
+.toggle-option input[type="radio"]:checked + .toggle-label:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── Badge inflación INDEC ───────────────────────────────────────────────── */
+.inflacion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 0.4rem 0.75rem;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  transition: all 0.3s;
+}
+
+.inflacion-badge.loading {
+  background: rgba(200,191,168,0.2);
+  border-color: var(--line);
+  color: var(--muted);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.inflacion-badge.ok {
+  background: rgba(42,125,79,0.08);
+  border-color: rgba(42,125,79,0.3);
+  color: var(--green);
+}
+
+.inflacion-badge.ok::before {
+  content: '✓ INDEC ·';
+  opacity: 0.7;
+}
+
+.inflacion-badge.error {
+  background: rgba(212,80,42,0.06);
+  border-color: rgba(212,80,42,0.2);
+  color: var(--accent);
+}
+
+.inflacion-badge.error::before {
+  content: '⚠ Sin conexión con INDEC ·';
+  opacity: 0.8;
+}
+
+.inflacion-badge.error::after {
+  content: ' Ingresalo manualmente (opcional)';
+  color: var(--muted);
+}
+
+/* Ocultar / mostrar */
+.hidden { display: none !important; }
+
+/* Campo inflación cuando está visible */
+.inflacion-field { gap: 0.5rem; }
+
+/* Divider */
 .divider {
   height: 1px;
   background: var(--line);
   opacity: 0.6;
 }
 
-/* ── Button ── */
+/* Button */
 button {
   background: var(--accent);
   color: white;
@@ -196,8 +309,7 @@ button {
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
   box-shadow: 3px 3px 0 rgba(212,80,42,0.3);
 }
-
-button:hover { background: #b8401e; box-shadow: 4px 4px 0 rgba(212,80,42,0.4); transform: translate(-1px,-1px); }
+button:hover  { background: #b8401e; box-shadow: 4px 4px 0 rgba(212,80,42,0.4); transform: translate(-1px,-1px); }
 button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80,42,0.3); }
 
 .reset-btn {
@@ -210,20 +322,18 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   text-underline-offset: 3px;
   align-self: flex-start;
 }
-
 .reset-btn:hover { background: transparent; color: rgba(250,248,243,0.7); box-shadow: none; transform: none; }
 
-/* ── Error ── */
+/* Error */
 .error-msg {
   font-size: 0.72rem;
   color: var(--accent);
   display: none;
   letter-spacing: 0.04em;
 }
-
 .error-msg.show { display: block; }
 
-/* ── Result ── */
+/* Result */
 .result {
   background: var(--ink);
   color: var(--paper);
@@ -236,7 +346,6 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   position: relative;
   overflow: hidden;
 }
-
 .result.show { display: flex; }
 
 @keyframes popIn {
@@ -264,7 +373,6 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   flex-direction: column;
   gap: 0.2rem;
 }
-
 .breakdown-item.full { grid-column: 1 / -1; }
 
 .breakdown-label {
@@ -278,11 +386,10 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   font-size: 0.88rem;
   color: rgba(250,248,243,0.85);
 }
-
 .breakdown-value.green { color: #5ecf8a; }
 .breakdown-value.red   { color: #f07070; }
 
-/* ── Veredicto ── */
+/* Veredicto */
 .veredicto {
   display: flex;
   align-items: flex-start;
@@ -292,27 +399,17 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   border-radius: 2px;
   border-left: 3px solid var(--gold);
 }
+.veredicto-icon  { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
+.veredicto-texto { font-size: 0.78rem; line-height: 1.6; color: rgba(250,248,243,0.9); }
 
-.veredicto-icon {
-  font-size: 1.3rem;
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-}
-
-.veredicto-texto {
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: rgba(250,248,243,0.9);
-}
-
-/* ── Inflación ── */
+/* Inflación row */
 .inflacion-row {
   padding-top: 0.5rem;
   border-top: 1px solid rgba(250,248,243,0.08);
   display: none;
 }
 
-/* ── Consejo ── */
+/* Consejo */
 .consejo {
   font-size: 0.65rem;
   color: rgba(250,248,243,0.4);
@@ -320,10 +417,9 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   border-top: 1px solid rgba(250,248,243,0.08);
   padding-top: 0.8rem;
 }
-
 .consejo:empty { display: none; }
 
-/* ── Responsive ── */
+/* Responsive */
 @media (max-width: 480px) {
   body { padding: 1rem 0.75rem 2rem; }
   .card { margin-right: 8px; }
@@ -335,4 +431,5 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   button { padding: 0.95rem; font-size: 0.7rem; }
   .result { padding: 1.3rem 1.25rem; }
   .result-breakdown { gap: 0.7rem; }
+  .toggle-label { padding: 0.65rem 0.5rem; font-size: 0.68rem; }
 }

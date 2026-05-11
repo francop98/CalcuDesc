@@ -1,34 +1,121 @@
+// ── Inflación INDEC ─────────────────────────────────────────────────────────
+// Fuente: API de datos abiertos del INDEC (IPC nivel general, variación mensual)
+// Si falla, el usuario puede ingresar el valor manualmente.
+
+const INFLACION_FALLBACK = null; // null = no precargamos un valor hardcodeado
+
+async function fetchInflacionINDEC() {
+  try {
+    // API pública del INDEC: serie IPC variación porcentual mensual (id 101.1_I2N_2016_M_22)
+    const url =
+      'https://apis.datos.gob.ar/series/api/series/?ids=101.1_I2N_2016_M_22&limit=1&sort=desc&format=json';
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const valor = data?.data?.[0]?.[1];
+    if (valor == null || isNaN(valor)) throw new Error('dato vacío');
+    return parseFloat(valor.toFixed(2));
+  } catch (e) {
+    return null;
+  }
+}
+
+// ── Formato ──────────────────────────────────────────────────────────────────
 function fmt(n) {
   return '$' + Math.round(n).toLocaleString('es-AR');
 }
-
 function fmtPct(n) {
   return (n >= 0 ? '+' : '') + n.toFixed(1) + '%';
 }
 
+// ── Estado de inflación ───────────────────────────────────────────────────────
+let inflacionAuto = null; // valor traído de INDEC
+let inflacionCargada = false;
+
+async function iniciarInflacion() {
+  const badge     = document.getElementById('inflacion-badge');
+  const badgeVal  = document.getElementById('inflacion-badge-valor');
+  const inputInfl = document.getElementById('inflacion');
+  const wrapInfl  = document.getElementById('inflacion-wrap');
+
+  badge.textContent = 'Buscando inflación INDEC…';
+  badge.className = 'inflacion-badge loading';
+
+  const valor = await fetchInflacionINDEC();
+
+  if (valor !== null) {
+    inflacionAuto = valor;
+    inflacionCargada = true;
+    badgeVal.textContent = valor + '%';
+    badge.className = 'inflacion-badge ok';
+    // Ocultamos el input manual y mostramos el badge como fuente
+    wrapInfl.classList.add('hidden');
+  } else {
+    inflacionAuto = null;
+    badge.className = 'inflacion-badge error';
+    // Mostramos input manual
+    wrapInfl.classList.remove('hidden');
+  }
+}
+
+// ── Toggle recargo ────────────────────────────────────────────────────────────
+function toggleRecargo() {
+  const sinInteres = document.getElementById('opt-sin-interes');
+  const wrapRecargo = document.getElementById('wrap-recargo');
+  if (sinInteres.checked) {
+    wrapRecargo.classList.add('hidden');
+  } else {
+    wrapRecargo.classList.remove('hidden');
+  }
+}
+
+// ── Cálculo principal ─────────────────────────────────────────────────────────
 function calcularCuotas() {
-  const efectivo    = parseFloat(document.getElementById('precio-efectivo').value);
-  const cuota       = parseFloat(document.getElementById('precio-cuota').value);
-  const nCuotas     = parseInt(document.getElementById('cant-cuotas').value);
-  const inflMensual = parseFloat(document.getElementById('inflacion').value);
-  const error       = document.getElementById('error-cuotas');
-  const result      = document.getElementById('result-cuotas');
+  const efectivo = parseFloat(document.getElementById('precio-efectivo').value);
+  const cuota    = parseFloat(document.getElementById('precio-cuota').value);
+  const nCuotas  = parseInt(document.getElementById('cant-cuotas').value);
+  const error    = document.getElementById('error-cuotas');
+  const result   = document.getElementById('result-cuotas');
+
+  // Recargo
+  const conRecargo   = document.getElementById('opt-con-recargo').checked;
+  const recargoPctInput = parseFloat(document.getElementById('recargo-pct').value);
+
+  // Inflación: primero auto, luego manual
+  let inflMensual;
+  if (inflacionAuto !== null) {
+    inflMensual = inflacionAuto;
+  } else {
+    inflMensual = parseFloat(document.getElementById('inflacion').value);
+  }
 
   if (!efectivo || !cuota || !nCuotas || efectivo <= 0 || cuota <= 0 || nCuotas < 1) {
     error.classList.add('show');
     result.classList.remove('show');
     return;
   }
+  if (conRecargo && (isNaN(recargoPctInput) || recargoPctInput <= 0)) {
+    error.textContent = 'Indicá el porcentaje de recargo.';
+    error.classList.add('show');
+    result.classList.remove('show');
+    return;
+  }
   error.classList.remove('show');
+  error.textContent = 'Completá precio efectivo, cuota y cantidad de cuotas.';
 
-  const totalCuotas = cuota * nCuotas;
-  const diff        = totalCuotas - efectivo;
-  const recargoPct  = ((totalCuotas / efectivo) - 1) * 100;
+  // Cuota real: si tiene recargo, el valor de cuota ya lo incluye; si es sin interés, no hay recargo extra.
+  // El recargo % se aplica sobre el total de cuotas para validación / info adicional.
+  const totalCuotasNominal = cuota * nCuotas;
 
-  // Valor presente de las cuotas ajustado por inflación
+  // Si hay recargo, mostramos también el recargo que ya está incluido
+  const recargoDeclarado = conRecargo ? recargoPctInput : 0;
+
+  const diff       = totalCuotasNominal - efectivo;
+  const recargoPct = ((totalCuotasNominal / efectivo) - 1) * 100;
+
+  // Valor presente ajustado por inflación
   const tieneInflacion = !isNaN(inflMensual) && inflMensual > 0;
   let valorReal = 0;
-
   if (tieneInflacion) {
     const r = inflMensual / 100;
     for (let k = 1; k <= nCuotas; k++) {
@@ -36,50 +123,75 @@ function calcularCuotas() {
     }
   }
 
-  // Veredicto
+  // ── Veredicto ──────────────────────────────────────────────────────────────
   let icono, texto, consejo, claseRecargo;
 
-  if (tieneInflacion) {
-    if (valorReal < efectivo) {
-      icono        = '✓';
-      texto        = `Con una inflación del ${inflMensual}% mensual, las cuotas te convienen: el valor real de lo que pagás es ${fmt(valorReal)}, menos que el precio de contado.`;
-      consejo      = `La inflación "licúa" las cuotas: pagás ${fmt(cuota)} por mes, pero cada peso futuro vale menos. El recargo nominal es ${fmtPct(recargoPct)}, pero el costo real es ${fmtPct(((valorReal / efectivo) - 1) * 100)}.`;
+  if (!conRecargo) {
+    // Sin interés
+    if (diff <= 0) {
+      icono = '✓';
+      texto = `Las cuotas sin interés son iguales o más baratas que el efectivo. Total: ${fmt(totalCuotasNominal)}.`;
+      consejo = 'Cuotas sin interés son lo ideal: preservás tu liquidez sin pagar de más.';
       claseRecargo = 'green';
     } else {
-      icono        = '✗';
-      texto        = `Aun considerando la inflación, el efectivo sigue siendo más conveniente. El valor presente de las cuotas (${fmt(valorReal)}) supera el precio de contado.`;
-      consejo      = `La inflación no alcanza a compensar el recargo. Te conviene pagar ${fmt(efectivo)} hoy.`;
+      // Raro que pase, pero por si el usuario ingresó mal los datos
+      icono = '~';
+      texto = `El total en cuotas (${fmt(totalCuotasNominal)}) supera el precio de contado. Verificá los datos.`;
+      consejo = '';
+      claseRecargo = '';
+    }
+  } else if (tieneInflacion) {
+    if (valorReal < efectivo) {
+      icono = '✓';
+      texto = `Con inflación del ${inflMensual}% mensual, las cuotas te convienen: el valor real de lo que pagás es ${fmt(valorReal)}, menos que el contado.`;
+      consejo = `La inflación "licúa" las cuotas: el recargo nominal es ${fmtPct(recargoPct)}, pero el costo real es ${fmtPct(((valorReal / efectivo) - 1) * 100)}.`;
+      claseRecargo = 'green';
+    } else {
+      icono = '✗';
+      texto = `Aun con inflación del ${inflMensual}% mensual, el efectivo sigue siendo más conveniente. El valor presente de las cuotas (${fmt(valorReal)}) supera el contado.`;
+      consejo = `La inflación no alcanza a compensar el recargo del ${fmtPct(recargoPct)}. Conviene pagar ${fmt(efectivo)} hoy.`;
       claseRecargo = 'red';
     }
   } else {
+    // Con recargo, sin dato de inflación
     if (diff <= 0) {
-      icono        = '✓';
-      texto        = `Las cuotas son iguales o más baratas que el efectivo. Total en cuotas: ${fmt(totalCuotas)}.`;
-      consejo      = 'Aprovechar las cuotas sin interés es lo ideal: pagás lo mismo o menos y preservás tu liquidez.';
+      icono = '✓';
+      texto = `Las cuotas son iguales o más baratas que el efectivo. Total en cuotas: ${fmt(totalCuotasNominal)}.`;
+      consejo = 'Aprovechá las cuotas: pagás lo mismo o menos.';
       claseRecargo = 'green';
     } else if (recargoPct < 5) {
-      icono        = '~';
-      texto        = `Las cuotas tienen un recargo bajo (${fmtPct(recargoPct)}). Depende de si necesitás el efectivo disponible.`;
-      consejo      = 'Si tenés el dinero y no lo necesitás para otra cosa, el efectivo es más conveniente. Si preferís no descapitalizarte, las cuotas son razonables.';
+      icono = '~';
+      texto = `Las cuotas tienen un recargo bajo (${fmtPct(recargoPct)}). Depende de si necesitás el efectivo disponible.`;
+      consejo = 'Si tenés el dinero y no lo necesitás, el efectivo es más conveniente. Si preferís no descapitalizarte, las cuotas son razonables.';
       claseRecargo = '';
     } else {
-      icono        = '✗';
-      texto        = `Las cuotas tienen un recargo de ${fmtPct(recargoPct)} (${fmt(diff)} extra). El efectivo es más conveniente.`;
-      consejo      = `Pagando en efectivo ahorrás ${fmt(diff)}. Solo convienen las cuotas si la inflación supera ese recargo o si necesitás preservar liquidez.`;
+      icono = '✗';
+      texto = `Las cuotas tienen un recargo de ${fmtPct(recargoPct)} (${fmt(diff)} extra). El efectivo es más conveniente.`;
+      consejo = `Pagando en efectivo ahorrás ${fmt(diff)}. Solo convienen las cuotas si la inflación supera ese recargo o necesitás preservar liquidez.`;
       claseRecargo = 'red';
     }
   }
 
-  // Pintar
+  // ── Pintar ─────────────────────────────────────────────────────────────────
   document.getElementById('veredicto-icon').textContent  = icono;
   document.getElementById('veredicto-texto').textContent = texto;
-  document.getElementById('res-ef').textContent           = fmt(efectivo);
-  document.getElementById('res-cuotas-total').textContent = fmt(totalCuotas);
-  document.getElementById('res-diff').textContent         = fmt(Math.abs(diff));
-  document.getElementById('res-recargo').textContent      = fmtPct(recargoPct);
-  document.getElementById('res-recargo').className        = 'breakdown-value ' + claseRecargo;
-  document.getElementById('consejo').textContent          = consejo;
+  document.getElementById('res-ef').textContent          = fmt(efectivo);
+  document.getElementById('res-cuotas-total').textContent= fmt(totalCuotasNominal);
+  document.getElementById('res-diff').textContent        = fmt(Math.abs(diff));
+  document.getElementById('res-recargo').textContent     = fmtPct(recargoPct);
+  document.getElementById('res-recargo').className       = 'breakdown-value ' + claseRecargo;
+  document.getElementById('consejo').textContent         = consejo;
 
+  // Fila de recargo declarado
+  const filaRecargo = document.getElementById('recargo-declarado-row');
+  if (conRecargo && recargoDeclarado > 0) {
+    document.getElementById('res-recargo-declarado').textContent = '+' + recargoDeclarado.toFixed(1) + '%';
+    filaRecargo.style.display = '';
+  } else {
+    filaRecargo.style.display = 'none';
+  }
+
+  // Fila inflación
   const inflRow = document.getElementById('inflacion-row');
   if (tieneInflacion) {
     document.getElementById('res-real').textContent = fmt(valorReal);
@@ -93,14 +205,26 @@ function calcularCuotas() {
   result.classList.add('show');
 }
 
+// ── Reset ─────────────────────────────────────────────────────────────────────
 function resetCuotas() {
   document.getElementById('result-cuotas').classList.remove('show');
-  ['precio-efectivo', 'precio-cuota', 'cant-cuotas', 'inflacion'].forEach(id => {
-    document.getElementById(id).value = '';
+  ['precio-efectivo', 'precio-cuota', 'cant-cuotas', 'inflacion', 'recargo-pct'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
   });
+  // Volver a "Sin interés"
+  document.getElementById('opt-sin-interes').checked = true;
+  toggleRecargo();
   document.getElementById('precio-efectivo').focus();
 }
 
+// ── Enter ─────────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') calcularCuotas();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  iniciarInflacion();
+  toggleRecargo();
 });

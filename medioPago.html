@@ -9,98 +9,140 @@
 </head>
 <body>
 
-  <div class="wrapper">
-    <div class="card">
-      <div class="card-header">
-        <a class="back-btn" href="index.html">← Volver</a>
-        <div class="label-tag">Análisis comparativo</div>
-        <h1>¿Efectivo o<br><em>cuotas?</em></h1>
+<div class="wrapper">
+  <div class="card">
+    <div class="card-header">
+      <a class="back-btn" href="index.html">← Volver</a>
+      <div class="label-tag">Análisis comparativo</div>
+      <h1>¿Efectivo o<br><em>cuotas?</em></h1>
+    </div>
+
+    <div class="card-body">
+
+      <!-- Precio efectivo -->
+      <div class="field">
+        <label for="precio-efectivo">Precio en efectivo</label>
+        <div class="input-wrap">
+          <span class="prefix">$</span>
+          <input type="number" id="precio-efectivo" placeholder="100000" min="1" step="any" inputmode="decimal">
+        </div>
       </div>
 
-      <div class="card-body">
+      <!-- Valor cuota -->
+      <div class="field">
+        <label for="precio-cuota">Valor de cada cuota</label>
+        <div class="input-wrap">
+          <span class="prefix">$</span>
+          <input type="number" id="precio-cuota" placeholder="45000" min="1" step="any" inputmode="decimal">
+        </div>
+      </div>
 
-        <div class="field">
-          <label for="precio-efectivo">Precio en efectivo</label>
-          <div class="input-wrap">
-            <span class="prefix">$</span>
-            <input type="number" id="precio-efectivo" placeholder="100000" min="1" step="any" inputmode="decimal">
-          </div>
+      <!-- Cantidad cuotas -->
+      <div class="field">
+        <label for="cant-cuotas">Cantidad de cuotas</label>
+        <div class="input-wrap">
+          <span class="prefix">#</span>
+          <input type="number" id="cant-cuotas" placeholder="3" min="1" max="120" step="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <!-- ¿Con interés? -->
+      <div class="field">
+        <label>¿Con interés?</label>
+        <div class="toggle-group">
+          <label class="toggle-option">
+            <input type="radio" name="tipo-cuota" id="opt-sin-interes" value="sin" onchange="toggleRecargo()" checked>
+            <span class="toggle-label">Sin interés</span>
+          </label>
+          <label class="toggle-option">
+            <input type="radio" name="tipo-cuota" id="opt-con-recargo" value="con" onchange="toggleRecargo()">
+            <span class="toggle-label">Con recargo</span>
+          </label>
         </div>
 
-        <div class="field">
-          <label for="precio-cuota">Valor de cada cuota</label>
+        <!-- Porcentaje de recargo (se muestra solo si eligió "Con recargo") -->
+        <div id="wrap-recargo" class="hidden" style="margin-top: 0.6rem;">
           <div class="input-wrap">
-            <span class="prefix">$</span>
-            <input type="number" id="precio-cuota" placeholder="45000" min="1" step="any" inputmode="decimal">
+            <span class="prefix">%</span>
+            <input type="number" id="recargo-pct" placeholder="recargo total sobre el precio" min="0.1" step="any" inputmode="decimal">
           </div>
+          <span class="hint">Recargo total sobre el precio de lista (ej: 15 si es 15% más caro en cuotas)</span>
+        </div>
+      </div>
+
+      <!-- Inflación: badge automático INDEC + fallback manual -->
+      <div class="field inflacion-field">
+        <label>Inflación mensual</label>
+
+        <!-- Badge estado INDEC -->
+        <div id="inflacion-badge" class="inflacion-badge loading">
+          Buscando dato INDEC… <span id="inflacion-badge-valor"></span>
         </div>
 
-        <div class="field">
-          <label for="cant-cuotas">Cantidad de cuotas</label>
-          <div class="input-wrap">
-            <span class="prefix">#</span>
-            <input type="number" id="cant-cuotas" placeholder="3" min="1" max="120" step="1" inputmode="numeric">
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="inflacion">Inflación mensual estimada <span class="hint-inline">(opcional)</span></label>
+        <!-- Input manual (se oculta si INDEC respondió bien) -->
+        <div id="inflacion-wrap">
           <div class="input-wrap">
             <span class="prefix">%</span>
             <input type="number" id="inflacion" placeholder="3.5" min="0" step="any" inputmode="decimal">
           </div>
-          <span class="hint">Si la dejás vacía, solo se compara el precio nominal</span>
+          <span class="hint">No se pudo obtener el dato automáticamente. Podés ingresarlo manualmente o dejarlo vacío para comparar solo el precio nominal.</span>
         </div>
-
-        <div class="error-msg" id="error-cuotas">Completá precio efectivo, cuota y cantidad de cuotas.</div>
-
-        <button onclick="calcularCuotas()">Analizar →</button>
-
-        <div class="divider"></div>
-
-        <div class="result" id="result-cuotas">
-          <div class="result-label">Análisis</div>
-
-          <div class="veredicto" id="veredicto">
-            <div class="veredicto-icon" id="veredicto-icon">✓</div>
-            <div class="veredicto-texto" id="veredicto-texto"></div>
-          </div>
-
-          <div class="result-breakdown">
-            <div class="breakdown-item">
-              <div class="breakdown-label">Total efectivo</div>
-              <div class="breakdown-value" id="res-ef">$0</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-label">Total en cuotas</div>
-              <div class="breakdown-value" id="res-cuotas-total">$0</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-label">Diferencia nominal</div>
-              <div class="breakdown-value" id="res-diff">$0</div>
-            </div>
-            <div class="breakdown-item">
-              <div class="breakdown-label">Recargo / ahorro</div>
-              <div class="breakdown-value" id="res-recargo">0%</div>
-            </div>
-          </div>
-
-          <div class="inflacion-row" id="inflacion-row">
-            <div class="breakdown-item full">
-              <div class="breakdown-label">Total cuotas a valor de hoy (ajustado por inflación)</div>
-              <div class="breakdown-value green" id="res-real">$0</div>
-            </div>
-          </div>
-
-          <div class="consejo" id="consejo"></div>
-
-          <button class="reset-btn" onclick="resetCuotas()">← Nueva consulta</button>
-        </div>
-
       </div>
+
+      <div class="error-msg" id="error-cuotas">Completá precio efectivo, cuota y cantidad de cuotas.</div>
+
+      <button onclick="calcularCuotas()">Analizar →</button>
+
+      <div class="divider"></div>
+
+      <div class="result" id="result-cuotas">
+        <div class="result-label">Análisis</div>
+
+        <div class="veredicto" id="veredicto">
+          <div class="veredicto-icon" id="veredicto-icon"></div>
+          <div class="veredicto-texto" id="veredicto-texto"></div>
+        </div>
+
+        <div class="result-breakdown">
+          <div class="breakdown-item">
+            <div class="breakdown-label">Total efectivo</div>
+            <div class="breakdown-value" id="res-ef">$0</div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-label">Total en cuotas</div>
+            <div class="breakdown-value" id="res-cuotas-total">$0</div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-label">Diferencia nominal</div>
+            <div class="breakdown-value" id="res-diff">$0</div>
+          </div>
+          <div class="breakdown-item">
+            <div class="breakdown-label">Recargo / ahorro</div>
+            <div class="breakdown-value" id="res-recargo">0%</div>
+          </div>
+          <!-- Fila recargo declarado (solo si eligió con recargo) -->
+          <div class="breakdown-item" id="recargo-declarado-row" style="display:none;">
+            <div class="breakdown-label">Recargo declarado</div>
+            <div class="breakdown-value" id="res-recargo-declarado"></div>
+          </div>
+        </div>
+
+        <div class="inflacion-row" id="inflacion-row">
+          <div class="breakdown-item full">
+            <div class="breakdown-label">Total cuotas a valor de hoy (ajustado por inflación)</div>
+            <div class="breakdown-value green" id="res-real">$0</div>
+          </div>
+        </div>
+
+        <div class="consejo" id="consejo"></div>
+
+        <button class="reset-btn" onclick="resetCuotas()">↩ Nueva consulta</button>
+      </div>
+
     </div>
   </div>
+</div>
 
-  <script src="medioPago.js"></script>
+<script src="medioPago.js"></script>
 </body>
 </html>

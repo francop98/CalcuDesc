@@ -30,7 +30,7 @@
 
       <!-- Valor cuota -->
       <div class="field">
-        <label for="precio-cuota">Valor total en cuotas</label>
+        <label for="precio-cuota">Valor en cuotas</label>
         <div class="input-wrap">
           <span class="prefix">$</span>
           <input type="number" id="precio-cuota" placeholder="135000" min="1" step="any" inputmode="decimal">
@@ -98,8 +98,12 @@
       <div class="result" id="result-cuotas">
         <div class="result-label">Análisis</div>
 
+        <div class="mejor-opcion-bloque">
+          <div class="mejor-opcion-label">Mejor opción</div>
+          <div class="mejor-opcion-valor" id="mejor-opcion"></div>
+        </div>
+
         <div class="veredicto" id="veredicto">
-          <div class="veredicto-icon" id="veredicto-icon"></div>
           <div class="veredicto-texto" id="veredicto-texto"></div>
         </div>
 

@@ -155,7 +155,6 @@ input[type="number"] {
   font-size: 1rem;
   color: var(--ink);
   outline: none;
-
 }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -383,6 +382,35 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(46,204
 }
 .breakdown-value.green { color: #2ecc8a; }
 .breakdown-value.red   { color: #f07070; }
+
+/* Mejor opción */
+.mejor-opcion-bloque {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.2rem 1.4rem;
+  background: rgba(46,204,138,0.07);
+  border-radius: 2px;
+  border: 1.5px solid rgba(46,204,138,0.25);
+}
+
+.mejor-opcion-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(226,240,232,0.5);
+}
+
+.mejor-opcion-valor {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.mejor-opcion-valor.verde  { color: #2ecc8a; }
+.mejor-opcion-valor.azul   { color: #5ab4e0; }
+.mejor-opcion-valor.neutro { color: #c9a84c; }
 
 /* Veredicto */
 .veredicto {

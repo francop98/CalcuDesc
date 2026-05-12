@@ -94,56 +94,61 @@ function calcularCuotas() {
   }
 
   // ── Veredicto ──────────────────────────────────────────────────────────────
-  let icono, texto, consejo, claseRecargo;
+  // Lógica:
+  // 1. Comparar montos nominales (efectivo vs total cuotas)
+  // 2. Si hay inflación, calcular cuánto "licúa" el recargo
+  // 3. Decisión final considerando ambos factores
 
-  if (!conRecargo) {
-    // Sin interés
-    if (diff <= 0) {
-      icono = '✓';
-      texto = `Las cuotas sin interés son iguales o más baratas que el efectivo. Total: ${fmt(totalCuotasNominal)}.`;
-      consejo = 'Cuotas sin interés son lo ideal: preservás tu liquidez sin pagar de más.';
-      claseRecargo = 'green';
-    } else {
-      // Raro que pase, pero por si el usuario ingresó mal los datos
-      icono = '~';
-      texto = `El total en cuotas (${fmt(totalCuotasNominal)}) supera el precio de contado. Verificá los datos.`;
-      consejo = '';
-      claseRecargo = '';
-    }
-  } else if (tieneInflacion) {
-    if (valorReal < efectivo) {
-      icono = '✓';
-      texto = `Con inflación del ${inflMensual}% mensual, las cuotas te convienen: el valor real de lo que pagás es ${fmt(valorReal)}, menos que el contado.`;
-      consejo = `La inflación "licúa" las cuotas: el recargo nominal es ${fmtPct(recargoPct)}, pero el costo real es ${fmtPct(((valorReal / efectivo) - 1) * 100)}.`;
-      claseRecargo = 'green';
-    } else {
-      icono = '✗';
-      texto = `Aun con inflación del ${inflMensual}% mensual, el efectivo sigue siendo más conveniente. El valor presente de las cuotas (${fmt(valorReal)}) supera el contado.`;
-      consejo = `La inflación no alcanza a compensar el recargo del ${fmtPct(recargoPct)}. Conviene pagar ${fmt(efectivo)} hoy.`;
-      claseRecargo = 'red';
-    }
+  let mejorOpcion, claseMejor, texto, consejo, claseRecargo;
+
+  // Recargo nominal sobre el precio de efectivo
+  // (independiente de si el usuario lo declaró o surge de la diferencia de montos)
+  const recargoPctReal = recargoPct; // ((totalCuotas / efectivo) - 1) * 100
+
+  // Costo real ajustado por inflación (si hay dato)
+  const costoPctReal = tieneInflacion ? ((valorReal / efectivo) - 1) * 100 : recargoPctReal;
+
+  if (diff <= 0) {
+    // Cuotas más baratas o igual que efectivo → siempre convienen cuotas
+    mejorOpcion = '✓ Cuotas';
+    claseMejor  = 'verde';
+    texto = `En cuotas pagás ${fmt(totalCuotasNominal)}, menos que en efectivo (${fmt(efectivo)}). No hay recargo.`;
+    consejo = 'Aprovechá las cuotas: pagás lo mismo o menos y conservás tu liquidez.';
+    claseRecargo = 'green';
+  } else if (tieneInflacion && valorReal <= efectivo) {
+    // Cuotas nominalmente más caras, pero la inflación las hace convenientes
+    mejorOpcion = '✓ Cuotas';
+    claseMejor  = 'verde';
+    texto = `Nominalmente las cuotas cuestan ${fmt(diff)} más (${fmtPct(recargoPctReal)}), pero con inflación del ${inflMensual}% mensual el costo real baja a ${fmt(valorReal)} — igual o menor al efectivo.`;
+    consejo = `La inflación licúa el recargo: pagás ${fmtPct(recargoPctReal)} más en papel, pero en valor real es ${fmtPct(costoPctReal)}. Las cuotas convienen.`;
+    claseRecargo = 'green';
+  } else if (tieneInflacion && valorReal > efectivo) {
+    // Cuotas más caras incluso ajustando por inflación → efectivo conviene
+    mejorOpcion = '✓ Efectivo';
+    claseMejor  = 'azul';
+    texto = `Las cuotas cuestan ${fmt(diff)} más (${fmtPct(recargoPctReal)} nominal). Ajustando por inflación del ${inflMensual}% mensual, el costo real sigue siendo ${fmt(valorReal)}, mayor al efectivo (${fmt(efectivo)}).`;
+    consejo = `La inflación no alcanza a compensar el recargo. Ahorrás ${fmt(valorReal - efectivo)} pagando hoy.`;
+    claseRecargo = 'red';
+  } else if (recargoPctReal < 5) {
+    // Sin inflación, recargo bajo → depende de la liquidez
+    mejorOpcion = '~ Depende';
+    claseMejor  = 'neutro';
+    texto = `Las cuotas tienen un recargo bajo: ${fmtPct(recargoPctReal)} (${fmt(diff)} extra). Total cuotas: ${fmt(totalCuotasNominal)} vs ${fmt(efectivo)} de contado.`;
+    consejo = 'El recargo es pequeño. Si no necesitás el efectivo, pagá de contado. Si preferís no descapitalizarte, las cuotas son razonables.';
+    claseRecargo = '';
   } else {
-    // Con recargo, sin dato de inflación
-    if (diff <= 0) {
-      icono = '✓';
-      texto = `Las cuotas son iguales o más baratas que el efectivo. Total en cuotas: ${fmt(totalCuotasNominal)}.`;
-      consejo = 'Aprovechá las cuotas: pagás lo mismo o menos.';
-      claseRecargo = 'green';
-    } else if (recargoPct < 5) {
-      icono = '~';
-      texto = `Las cuotas tienen un recargo bajo (${fmtPct(recargoPct)}). Depende de si necesitás el efectivo disponible.`;
-      consejo = 'Si tenés el dinero y no lo necesitás, el efectivo es más conveniente. Si preferís no descapitalizarte, las cuotas son razonables.';
-      claseRecargo = '';
-    } else {
-      icono = '✗';
-      texto = `Las cuotas tienen un recargo de ${fmtPct(recargoPct)} (${fmt(diff)} extra). El efectivo es más conveniente.`;
-      consejo = `Pagando en efectivo ahorrás ${fmt(diff)}. Solo convienen las cuotas si la inflación supera ese recargo o necesitás preservar liquidez.`;
-      claseRecargo = 'red';
-    }
+    // Sin inflación, recargo significativo → efectivo conviene
+    mejorOpcion = '✓ Efectivo';
+    claseMejor  = 'azul';
+    texto = `Las cuotas tienen un recargo de ${fmtPct(recargoPctReal)} (${fmt(diff)} extra). Total cuotas: ${fmt(totalCuotasNominal)} vs ${fmt(efectivo)} de contado.`;
+    consejo = `Pagando en efectivo ahorrás ${fmt(diff)}. Las cuotas solo convienen si necesitás preservar liquidez o esperás que la inflación supere el ${fmtPct(recargoPctReal)} de recargo.`;
+    claseRecargo = 'red';
   }
 
   // ── Pintar ─────────────────────────────────────────────────────────────────
-  document.getElementById('veredicto-icon').textContent  = icono;
+  const mejorEl = document.getElementById('mejor-opcion');
+  mejorEl.textContent = mejorOpcion;
+  mejorEl.className   = 'mejor-opcion-valor ' + claseMejor;
   document.getElementById('veredicto-texto').textContent = texto;
   document.getElementById('res-ef').textContent          = fmt(efectivo);
   document.getElementById('res-cuotas-total').textContent= fmt(totalCuotasNominal);

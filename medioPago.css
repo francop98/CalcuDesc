@@ -1,14 +1,14 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #f5f0e8;
-  --ink: #1a1208;
-  --accent: #d4502a;
-  --paper: #faf8f3;
-  --line: #c8bfa8;
-  --muted: #8c7e68;
-  --gold: #c9a84c;
-  --green: #2a7d4f;
+  --bg: #0a1628;
+  --ink: #e2f0e8;
+  --accent: #2ecc8a;
+  --paper: #0f2040;
+  --line: #1a3a5c;
+  --muted: #5a8fa8;
+  --gold: #2ecc8a;
+  --green: #2ecc8a;
 }
 
 body {
@@ -20,10 +20,7 @@ body {
   align-items: flex-start;
   justify-content: center;
   padding: 1.5rem 1rem 3rem;
-  background-image:
-    radial-gradient(circle at 15% 20%, rgba(212,80,42,0.06) 0%, transparent 50%),
-    radial-gradient(circle at 85% 80%, rgba(42,125,79,0.06) 0%, transparent 50%),
-    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8bfa8' fill-opacity='0.18'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background: linear-gradient(135deg, #0a1628 0%, #0f2a1e 50%, #0a1628 100%);
 }
 
 .wrapper {
@@ -38,7 +35,7 @@ body {
   border-radius: 2px;
   width: 100%;
   margin-right: 12px;
-  box-shadow: 6px 6px 0 var(--line), 12px 12px 0 rgba(200,191,168,0.3);
+  box-shadow: 6px 6px 0 var(--line), 12px 12px 0 rgba(26,58,92,0.3);
   animation: slideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -134,7 +131,7 @@ label {
 }
 .input-wrap:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(212,80,42,0.1);
+  box-shadow: 0 0 0 3px rgba(46,204,138,0.1);
 }
 
 .prefix {
@@ -144,7 +141,7 @@ label {
   border-right: 1.5px solid var(--line);
   display: flex;
   align-items: center;
-  background: rgba(200,191,168,0.2);
+  background: rgba(26,58,92,0.4);
   user-select: none;
   min-height: 3rem;
 }
@@ -158,7 +155,7 @@ input[type="number"] {
   font-size: 1rem;
   color: var(--ink);
   outline: none;
-
+  -moz-appearance: textfield;
 }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
@@ -215,21 +212,21 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 }
 
 .toggle-option input[type="radio"]:checked + .toggle-label {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent);
+  color: #0a1628;
 }
 
 .toggle-option:hover .toggle-label {
-  background: rgba(200,191,168,0.3);
+  background: rgba(26,58,92,0.6);
   color: var(--ink);
 }
 
 .toggle-option input[type="radio"]:checked + .toggle-label:hover {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent);
+  color: #0a1628;
 }
 
-/* ── Badge inflación INDEC ───────────────────────────────────────────────── */
+/* ── Badge inflación ─────────────────────────────────────────────────────── */
 .inflacion-badge {
   display: inline-flex;
   align-items: center;
@@ -243,7 +240,7 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 }
 
 .inflacion-badge.loading {
-  background: rgba(200,191,168,0.2);
+  background: rgba(26,58,92,0.4);
   border-color: var(--line);
   color: var(--muted);
   animation: pulse 1.2s ease-in-out infinite;
@@ -255,20 +252,15 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 }
 
 .inflacion-badge.ok {
-  background: rgba(42,125,79,0.08);
-  border-color: rgba(42,125,79,0.3);
-  color: var(--green);
-}
-
-.inflacion-badge.ok::before {
-  content: '✓ INDEC ·';
-  opacity: 0.7;
+  background: rgba(46,204,138,0.08);
+  border-color: rgba(46,204,138,0.3);
+  color: var(--accent);
 }
 
 .inflacion-badge.error {
-  background: rgba(212,80,42,0.06);
-  border-color: rgba(212,80,42,0.2);
-  color: var(--accent);
+  background: rgba(240,112,112,0.06);
+  border-color: rgba(240,112,112,0.2);
+  color: #f07070;
 }
 
 .inflacion-badge.error::before {
@@ -297,7 +289,7 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 /* Button */
 button {
   background: var(--accent);
-  color: white;
+  color: #0a1628;
   border: none;
   padding: 1rem;
   font-family: 'DM Mono', monospace;
@@ -306,28 +298,30 @@ button {
   text-transform: uppercase;
   cursor: pointer;
   border-radius: 2px;
+  font-weight: 600;
   transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
-  box-shadow: 3px 3px 0 rgba(212,80,42,0.3);
+  box-shadow: 3px 3px 0 rgba(46,204,138,0.3);
 }
-button:hover  { background: #b8401e; box-shadow: 4px 4px 0 rgba(212,80,42,0.4); transform: translate(-1px,-1px); }
-button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80,42,0.3); }
+button:hover  { background: #26b577; box-shadow: 4px 4px 0 rgba(46,204,138,0.4); transform: translate(-1px,-1px); }
+button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(46,204,138,0.3); }
 
 .reset-btn {
   background: transparent;
-  color: rgba(250,248,243,0.4);
+  color: rgba(226,240,232,0.4);
   font-size: 0.6rem;
   box-shadow: none;
   padding: 0.3rem 0;
   text-decoration: underline;
   text-underline-offset: 3px;
   align-self: flex-start;
+  font-weight: 400;
 }
-.reset-btn:hover { background: transparent; color: rgba(250,248,243,0.7); box-shadow: none; transform: none; }
+.reset-btn:hover { background: transparent; color: rgba(226,240,232,0.7); box-shadow: none; transform: none; }
 
 /* Error */
 .error-msg {
   font-size: 0.72rem;
-  color: var(--accent);
+  color: #f07070;
   display: none;
   letter-spacing: 0.04em;
 }
@@ -335,8 +329,8 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
 
 /* Result */
 .result {
-  background: var(--ink);
-  color: var(--paper);
+  background: #071020;
+  color: var(--ink);
   border-radius: 2px;
   padding: 1.6rem 1.8rem;
   display: none;
@@ -345,6 +339,7 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--line);
 }
 .result.show { display: flex; }
 
@@ -357,7 +352,7 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   font-size: 0.65rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .result-breakdown {
@@ -365,7 +360,7 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   grid-template-columns: 1fr 1fr;
   gap: 0.8rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(250,248,243,0.1);
+  border-top: 1px solid rgba(226,240,232,0.08);
 }
 
 .breakdown-item {
@@ -379,14 +374,14 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   font-size: 0.58rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(250,248,243,0.4);
+  color: rgba(226,240,232,0.4);
 }
 
 .breakdown-value {
   font-size: 0.88rem;
-  color: rgba(250,248,243,0.85);
+  color: rgba(226,240,232,0.85);
 }
-.breakdown-value.green { color: #5ecf8a; }
+.breakdown-value.green { color: #2ecc8a; }
 .breakdown-value.red   { color: #f07070; }
 
 /* Veredicto */
@@ -395,26 +390,26 @@ button:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 rgba(212,80
   align-items: flex-start;
   gap: 0.9rem;
   padding: 1rem 1.2rem;
-  background: rgba(255,255,255,0.05);
+  background: rgba(46,204,138,0.05);
   border-radius: 2px;
-  border-left: 3px solid var(--gold);
+  border-left: 3px solid var(--accent);
 }
 .veredicto-icon  { font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem; }
-.veredicto-texto { font-size: 0.78rem; line-height: 1.6; color: rgba(250,248,243,0.9); }
+.veredicto-texto { font-size: 0.78rem; line-height: 1.6; color: rgba(226,240,232,0.9); }
 
 /* Inflación row */
 .inflacion-row {
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(250,248,243,0.08);
+  border-top: 1px solid rgba(226,240,232,0.08);
   display: none;
 }
 
 /* Consejo */
 .consejo {
   font-size: 0.65rem;
-  color: rgba(250,248,243,0.4);
+  color: rgba(226,240,232,0.4);
   line-height: 1.6;
-  border-top: 1px solid rgba(250,248,243,0.08);
+  border-top: 1px solid rgba(226,240,232,0.08);
   padding-top: 0.8rem;
 }
 .consejo:empty { display: none; }
